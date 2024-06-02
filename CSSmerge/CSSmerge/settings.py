@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'Notification',
     'Login',
-    'Ticket'
+    'Ticket',
 ]
 
 MIDDLEWARE = [
