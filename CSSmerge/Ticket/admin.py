@@ -2,8 +2,8 @@ from django.contrib import admin
 from .models import Ticket
 
 class TicketAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "status")
-    search_fields = (("id", "title", "status"))
+    list_display = ("id", "user", "title", "status")
+    search_fields = (("status", "user"))
     readonly_fields = ['user']
 
     def save_model(self, request, obj, form, change):
