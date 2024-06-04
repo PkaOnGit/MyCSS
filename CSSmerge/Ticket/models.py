@@ -2,11 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 
 status = (("Pending","pending"),("Closed","closed"))
-username = User
 
 class Ticket(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(username, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255, null = True)
     content = models.TextField()
     status = models.CharField(choices=status,max_length=155, default="pending")
@@ -28,10 +27,3 @@ class Ticket(models.Model):
 
     class Meta:
         ordering = ["-created"]
-
-class Category(models.Model):
-    slug = models.SlugField()
-    name = models.CharField(max_length=200)
-    
-    def __str__(self):
-        return self.name

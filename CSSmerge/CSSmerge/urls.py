@@ -16,7 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from Login.views import RegisterAPIView, LoginAPIView  # Adjust import as necessary
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('registeration/login/', LoginAPIView.as_view(), name='login'),  # Use as_view() for class-based views
+    path('registeration/register/', RegisterAPIView.as_view(), name='register'),
 ]

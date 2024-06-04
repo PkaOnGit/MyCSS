@@ -3,7 +3,8 @@ from .models import Ticket
 
 class TicketAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "title", "status")
-    search_fields = (("status", "user"))
+    search_fields = (("user","title"))
+    list_filter = (("status",))
     readonly_fields = ['user']
 
     def save_model(self, request, obj, form, change):

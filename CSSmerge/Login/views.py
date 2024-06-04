@@ -12,7 +12,6 @@ class LoginAPIView(APIView):
         # Handle GET request (if needed)
         return Response({"detail": "GET request received"}, status=status.HTTP_200_OK)
 
-
     def post(self, request):
         print("Request data:", request.data)  # Print request data for debugging
         serializer = LoginSerializer(data=request.data)
