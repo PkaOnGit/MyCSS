@@ -3,7 +3,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
+from django.contrib.auth.models import BaseUserManager
 
 class UserRegister(models.Model):
     id = models.AutoField(primary_key=True)
@@ -25,3 +25,16 @@ class UserRegister(models.Model):
 class UserLogin(models.Model):
     username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=100)
+
+class UserRegisterManager(BaseUserManager):
+    def create_user(self, username, email, password=None, **extra_fields):
+        if not username:
+            raise ValueError('The Username field must be set')
+        if not email:
+            raise ValueError('The Email field must be set')
+        
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
