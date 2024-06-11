@@ -62,7 +62,6 @@ class UserLogin(models.Model):
 
 class Userprofile(models.Model):
     name = models.CharField(max_length=1024,null=True)
-    roles = models.ManyToManyField(Role, related_name='users')
     phone = models.CharField(max_length=15, null=True)
     address = models.CharField(null=True)
     notes = models.CharField(max_length=5000, null=True)
