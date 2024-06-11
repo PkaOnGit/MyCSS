@@ -16,11 +16,25 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from Login.views import RegisterAPIView, LoginAPIView, DeleteUserAPIView  # Adjust import as necessary
+from Login.views import RegisterAPIView, LoginAPIView, DeleteUserAPIView, UserProfileAPIView, ListUsersAPIView#, CustomAuthToken  # Adjust import as necessary
+from Login.views import RoleDetailAPIView, RoleListCreateAPIView, UserRoleAPIView
+from Ticket.views import TicketListCreateAPIView, TicketRetrieveUpdateDestroyAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # ----------------User module--------------------
+    # path('api-token-auth/', CustomAuthToken.as_view(), name='get-token'),
     path('registeration/login/', LoginAPIView.as_view(), name='login'),  # Use as_view() for class-based views
     path('registeration/register/', RegisterAPIView.as_view(), name='register'),
-     path('registeration/delete-user/<int:user_id>/', DeleteUserAPIView.as_view(), name='delete-user'),
+    path('registeration/delete-user/<int:user_id>/', DeleteUserAPIView.as_view(), name='delete-user'),
+    path('registeration/users/', ListUsersAPIView.as_view(), name='list-users'),
+    path('registeration/profile/<int:user_id>/', UserProfileAPIView.as_view(), name='list-users'),
+    # -----------------role management-------------------
+    path('roles/', RoleListCreateAPIView.as_view(), name='role-list-create'),
+    path('roles/<int:pk>/', RoleDetailAPIView.as_view(), name='role-detail'),
+    path('users/<int:user_id>/roles/', UserRoleAPIView.as_view(), name='user-role'),
+    # ----------------Ticket module----------------
+    path('tickets/', TicketListCreateAPIView.as_view(), name='ticket-list-create'),
+    path('tickets/<int:pk>/', TicketRetrieveUpdateDestroyAPIView.as_view(), name='ticket-detail'),
 ]
+

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework.authtoken',
     'rest_framework',
     'Notification',
     'Login',
@@ -80,7 +81,7 @@ WSGI_APPLICATION = 'CSSmerge.wsgi.application'
 DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': "CSSmerge",
+            'NAME': "MyCSS",
             'USER': "postgres",
             'PASSWORD': "sql",
             'HOST': "localhost",
@@ -138,3 +139,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # EMAIL_HOST_USER = 'your-email@example.com'  # Replace with your email
 # EMAIL_HOST_PASSWORD = 'your-email-password'  # Replace with your email password
 # DEFAULT_FROM_EMAIL = 'webmaster@example.com'  # Replace with your "from" email
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+AUTH_USER_MODEL = 'Login.UserRegister'

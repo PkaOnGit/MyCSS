@@ -1,11 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 status = (("Pending","pending"),("Closed","closed"))
 
 class Ticket(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255, null = True)
     content = models.TextField()
     status = models.CharField(choices=status,max_length=155, default="pending")
