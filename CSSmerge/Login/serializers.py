@@ -5,20 +5,37 @@ from .models import UserRegister
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework import serializers
 from .models import UserRegister, Userprofile
+from rest_framework import serializers
+from .models import Role
+from Notification.models import Notification
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    roles = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), many=True, required=False)
+
     class Meta:
         model = UserRegister
-        fields = ('id','username','password')
+        fields = ('id', 'username', 'password', 'email', 'roles')
 
     def create(self, validated_data):
+        roles = validated_data.pop('roles', [])
         validated_data['password'] = make_password(validated_data['password'])
         user = UserRegister.objects.create(**validated_data)
+        
+        # Assign roles
+        user.roles.set(roles)
+        
+        # Send notification
+        Notification.objects.create(
+            user=user,
+            message=f"Welcome {user.username}! Your registration is successful."
+        )
         return user
-
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
+    
+class UserRegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserRegister
+        fields = ['id', 'username', 'email', 'name', 'phone', 'address', 'status', 'roles', 'email_confirm', 'phone_confirm', 'create_at', 'create_by', 'update_at', 'update_by', 'notes', 'is_staff']
+        read_only_fields = ['create_at', 'update_at', 'create_by', 'update_by']
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -61,7 +78,7 @@ class LoginSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Userprofile
-        fields =('name', 'phone', 'address', 'notes')
+        fields =('name', 'phone', 'address', 'roles', 'notes')
 
 # ------------------------role management-------------------------------
 from rest_framework import serializers

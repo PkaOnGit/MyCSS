@@ -6,6 +6,14 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
+
+class Role(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
 class UserRegisterManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
@@ -22,14 +30,7 @@ class UserRegisterManager(BaseUserManager):
 
         return self.create_user(username, email, password, **extra_fields)
 
-class Role(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    description = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-class UserRegister(AbstractBaseUser):
+class UserRegister(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=100)
@@ -38,7 +39,7 @@ class UserRegister(AbstractBaseUser):
     phone = models.CharField(max_length=15, null=True)
     address = models.CharField(max_length=255, null=True)
     status = models.CharField(max_length=1, null=True)
-    roles = models.ManyToManyField(Role, related_name='users')
+    roles = models.ManyToManyField('Role', related_name='users')
     email_confirm = models.BooleanField(default=False)
     phone_confirm = models.BooleanField(default=False)
     create_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -47,6 +48,19 @@ class UserRegister(AbstractBaseUser):
     update_by = models.CharField(max_length=150, null=True)
     notes = models.CharField(max_length=5000, null=True)
     is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='user_set',
+        related_query_name='user',
+        blank=True,
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='user_set',
+        related_query_name='user',
+        blank=True,
+    )
 
     objects = UserRegisterManager()
 
@@ -55,6 +69,12 @@ class UserRegister(AbstractBaseUser):
 
     def __str__(self):
         return self.username
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
     
 class UserLogin(models.Model):
     username = models.CharField(max_length=50, unique=True)
@@ -64,7 +84,8 @@ class Userprofile(models.Model):
     name = models.CharField(max_length=1024,null=True)
     phone = models.CharField(max_length=15, null=True)
     address = models.CharField(null=True)
+    roles = models.ManyToManyField(UserRegister, related_name='users' )
     notes = models.CharField(max_length=5000, null=True)
 
-class CustomToken(Token):
-    user_token = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+# class CustomToken(Token):
+#     user_token = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

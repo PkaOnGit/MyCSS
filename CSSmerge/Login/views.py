@@ -6,15 +6,58 @@ from .models import UserRegister
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.hashers import check_password
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import UserRegister
+from .serializers import UserRegisterSerializer, RegistrationSerializer
+from Notification.models import Notification
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 
-class RegisterAPIView(APIView):
+User = get_user_model()
+
+class RegisterUserAPIView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user = serializer.save()
+            Notification.objects.create(user=user, message="Welcome to the system!")
+            # Send email notification
+            send_mail(
+                'Welcome to the system',
+                'Thank you for registering.',
+                'from@example.com',
+                [user.email],
+                fail_silently=False,
+            )
+            return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserProfileAPIView(APIView):
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            serializer = UserRegisterSerializer(user)
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            serializer = UserRegisterSerializer(user, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                Notification.objects.create(
+                    user=user,
+                    message="Your profile has been updated by the admin."
+                )
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
 class LoginAPIView(APIView):
     def post(self, request):
         username = request.data.get('username')
@@ -27,26 +70,6 @@ class LoginAPIView(APIView):
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
         except UserRegister.DoesNotExist:
             return Response({'detail': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-
-class UserProfileAPIView(APIView):
-    def get(self, request, user_id):
-        try:
-            user = UserRegister.objects.get(id=user_id)
-            serializer = UserProfileSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except UserRegister.DoesNotExist:
-            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    def put(self, request, user_id):
-        try:
-            user = UserRegister.objects.get(id=user_id)
-            serializer = UserProfileSerializer(user, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except UserRegister.DoesNotExist:
-            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class DeleteUserAPIView(APIView):
     def delete(self, request, user_id):

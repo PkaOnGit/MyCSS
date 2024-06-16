@@ -7,7 +7,7 @@ class Ticket(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255, null = True)
-    content = models.TextField()
+    content = models.CharField(max_length= 1024, null = True)
     status = models.CharField(choices=status,max_length=155, default="pending")
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
