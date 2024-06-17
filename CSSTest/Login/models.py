@@ -75,10 +75,6 @@ class UserRegister(AbstractBaseUser, PermissionsMixin):
 
     def has_module_perms(self, app_label):
         return self.is_superuser
-    
-class UserLogin(models.Model):
-    username = models.CharField(max_length=50, unique=True)
-    password = models.CharField(max_length=100)
 
 class Userprofile(models.Model):
     name = models.CharField(max_length=1024,null=True)
