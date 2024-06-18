@@ -39,9 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework.authtoken',
     'rest_framework',
-    'Notification',
+    'Notification',     
     'Login',
     'Ticket',
+    'drf_yasg2', 
 ]
 
 MIDDLEWARE = [

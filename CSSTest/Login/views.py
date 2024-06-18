@@ -14,10 +14,12 @@ from .serializers import UserRegisterSerializer, RegistrationSerializer
 from Notification.models import Notification
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from .permissions import RolePermissionFactory
 
 User = get_user_model()
 
 class RegisterUserAPIView(APIView):
+
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -35,6 +37,8 @@ class RegisterUserAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileAPIView(APIView):
+    permission_classes = [RolePermissionFactory('Admin', 'Staff')]
+
     def get(self, request, user_id):
         try:
             user = User.objects.get(id=user_id)
@@ -71,14 +75,15 @@ class LoginAPIView(APIView):
         except UserRegister.DoesNotExist:
             return Response({'detail': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
-class DeleteUserAPIView(APIView):
-    def delete(self, request, user_id):
-        try:
-            user = UserRegister.objects.get(id=user_id)
-            user.delete()
-            return Response({'detail': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-        except UserRegister.DoesNotExist:
-            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+# class DeleteUserAPIView(APIView):
+    
+#     def delete(self, request, user_id):
+#         try:
+#             user = UserRegister.objects.get(id=user_id)
+#             user.delete()
+#             return Response({'detail': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+#         except UserRegister.DoesNotExist:
+#             return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 # class CustomAuthToken(ObtainAuthToken):
 #     def post(self, request, *args, **kwargs):
@@ -93,6 +98,8 @@ class DeleteUserAPIView(APIView):
 #         })
     
 class ListUsersAPIView(APIView):
+    permission_classes = [RolePermissionFactory('Admin', 'Staff')]
+    
     def get(self, request):
         users = UserRegister.objects.all()
         serializer = RegistrationSerializer(users, many=True)
@@ -107,6 +114,7 @@ from .models import Role, UserRegister
 from .serializers import RoleSerializer, UserRoleSerializer
 
 class RoleListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [RolePermissionFactory('Admin', 'Staff')]
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
 
@@ -115,6 +123,8 @@ class RoleDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RoleSerializer
 
 class UserRoleAPIView(APIView):
+    permission_classes = [RolePermissionFactory('Admin', 'Staff')]
+
     def get(self, request, user_id):
         try:
             user = UserRegister.objects.get(id=user_id)

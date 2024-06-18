@@ -9,6 +9,7 @@ from Notification.models import Notification
 from Login.models import UserRegister
 from django.core.mail import send_mail
 import logging
+from Login.permissions import RolePermissionFactory
 
 User = get_user_model()
 
@@ -16,6 +17,8 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class TicketCreateAPIView(APIView):
+    permission_classes = [RolePermissionFactory('Admin', 'Staff', 'User')]
+
     def post(self, request):
         serializer = TicketSerializer(data=request.data)
         if serializer.is_valid():
@@ -39,6 +42,8 @@ class TicketCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TicketEditAPIView(APIView):
+    permission_classes = [RolePermissionFactory('Admin', 'Staff')]
+
     def get(self, request, ticket_id):
         try:
             ticket = Ticket.objects.get(id=ticket_id)
@@ -73,6 +78,8 @@ class TicketEditAPIView(APIView):
             return Response({'detail': 'Ticket not found'}, status=status.HTTP_404_NOT_FOUND)
         
 class ListTicketsAPIView(APIView):
+    permission_classes = [RolePermissionFactory('Admin', 'Staff')]
+    
     def get(self, request):
         tickets = Ticket.objects.all()
         serializer = TicketSerializer(tickets, many=True)
