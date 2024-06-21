@@ -35,7 +35,7 @@ class UserRegister(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=100)
     name = models.CharField(max_length=1024, null=True)
-    email = models.EmailField(max_length=100, unique=True, null=True)
+    email = models.EmailField(max_length=100, null=True)
     phone = models.CharField(max_length=15, null=True)
     address = models.CharField(max_length=255, null=True)
     status = models.CharField(max_length=1, null=True)

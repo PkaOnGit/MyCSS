@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'Notification',     
     'Login',
     'Ticket',
-    'drf_yasg2', 
 ]
 
 MIDDLEWARE = [
@@ -96,10 +95,10 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 6,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -107,8 +106,20 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'Login.validators.MaximumLengthValidator',  # Replace 'Login' with the name of your app
+        'OPTIONS': {
+            'max_length': 12,
+        }
+    },
+    {
+        'NAME': 'Login.validators.CustomAttributeSimilarityValidator',
+        'OPTIONS': {
+            'user_attributes': ['username', 'email'],
+            'max_similarity': 0.7,
+        }
+    },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -133,13 +144,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email configuration
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.example.com'  # Replace with your SMTP server
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@example.com'  # Replace with your email
-# EMAIL_HOST_PASSWORD = 'your-email-password'  # Replace with your email password
-# DEFAULT_FROM_EMAIL = 'webmaster@example.com'  # Replace with your "from" email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Replace with your SMTP server
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'phakkapol@e-works.co.uk'  # Replace with your email
+EMAIL_HOST_PASSWORD = 'fxru kump imej mgda'  # Replace with your email password
+DEFAULT_FROM_EMAIL = 'phakkpol@e-works.co.uk'  # Replace with your "from" email
+ADMIN_EMAIL = 'phakkapol@e-works.co.uk'  # Replace with your admin email
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',

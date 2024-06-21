@@ -8,6 +8,9 @@ from .models import UserRegister, Userprofile
 from rest_framework import serializers
 from .models import Role
 from Notification.models import Notification
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
 
 class RegistrationSerializer(serializers.ModelSerializer):
     roles = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), many=True, required=False)
@@ -18,11 +21,29 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         roles = validated_data.pop('roles', [])
-        validated_data['password'] = make_password(validated_data['password'])
-        user = UserRegister.objects.create(**validated_data)
+        
+        # Validate the password
+        password = validated_data.get('password')
+        user = UserRegister(**validated_data)  # Create an instance without saving to pass to the validator
+        try:
+            validate_password(password, user=user)
+        except ValidationError as e:
+            raise serializers.ValidationError({'password': list(e.messages)})
+
+        validated_data['password'] = make_password(password)
+        user.save()  # Now save the instance
         
         # Assign roles
         user.roles.set(roles)
+
+        # Send welcome email
+        send_mail(
+            'Welcome to My Site',
+            f'Hello {user.username}, welcome to our site!',
+            'phakkapol@example.com',  # From email
+            [user.email],
+            fail_silently=False,  # Set to False to raise an error if email fails
+        )
         
         # Send notification
         Notification.objects.create(

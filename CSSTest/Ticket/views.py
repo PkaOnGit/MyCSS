@@ -10,6 +10,8 @@ from Login.models import UserRegister
 from django.core.mail import send_mail
 import logging
 from Login.permissions import RolePermissionFactory
+from django.conf import settings
+
 
 User = get_user_model()
 
@@ -31,9 +33,17 @@ class TicketCreateAPIView(APIView):
                 Notification.objects.create(user=user, message="Your ticket has been created!")
                 send_mail(
                     'Ticket Created',
-                    f'Thank you for creating a ticket: {ticket.title}',
-                    'from@example.com',
+                    f'Thank you {user.username} for creating a ticket: {ticket.title}',
+                    'phakkapol@e-works.co.uk',
                     [user.email],
+                    fail_silently=False,
+                )
+                # Send email notification to the admin
+                send_mail(
+                    'New Ticket Created',
+                    f'A new ticket has been created by {user.username}: {ticket.title}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [settings.ADMIN_EMAIL],
                     fail_silently=False,
                 )
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -67,7 +77,7 @@ class TicketEditAPIView(APIView):
                 send_mail(
                     'Ticket Updated',
                     f'Your ticket "{ticket.title}" has been updated. Check the details in your account.',
-                    'from@example.com',
+                    'phakkapol@e-works.co.uk',
                     [user.email],
                     fail_silently=False,
                 )

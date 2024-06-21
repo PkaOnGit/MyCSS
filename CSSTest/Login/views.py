@@ -19,7 +19,6 @@ from .permissions import RolePermissionFactory
 User = get_user_model()
 
 class RegisterUserAPIView(APIView):
-
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -27,12 +26,12 @@ class RegisterUserAPIView(APIView):
             Notification.objects.create(user=user, message="Welcome to the system!")
             # Send email notification
             send_mail(
-                'Welcome to the system',
-                'Thank you for registering.',
-                'from@example.com',
-                [user.email],
-                fail_silently=False,
-            )
+                    'Welcome to the system',
+                    'Thank you for registering.',
+                    'phakkapol@gmail.com',
+                    [user.email],
+                    fail_silently=False,
+                )
             return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -56,6 +55,14 @@ class UserProfileAPIView(APIView):
                 Notification.objects.create(
                     user=user,
                     message="Your profile has been updated by the admin."
+                )
+                 # Send an email notification
+                send_mail(
+                    'Profile Updated',
+                    'Hello {}, your profile has been updated by the admin.'.format(user.username),
+                    'phakkapol@e-works.co.uk',  # Replace with your "from" email
+                    [user.email],
+                    fail_silently=False,
                 )
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -139,6 +146,18 @@ class UserRoleAPIView(APIView):
             serializer = UserRoleSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
+                Notification.objects.create(
+                    user=user,
+                    message="Your profile has been updated by the admin."
+                )
+                # Send email notification
+                send_mail(
+                    'Role updating',
+                    'Your role has been update.',
+                    'phakkapol@e-works.co.uk',
+                    [user.email],
+                    fail_silently=False,
+                )
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except UserRegister.DoesNotExist:
