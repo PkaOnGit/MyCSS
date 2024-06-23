@@ -18,39 +18,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRegister
         fields = ('id', 'username', 'password', 'email', 'roles')
-
-    def create(self, validated_data):
-        roles = validated_data.pop('roles', [])
-        
-        # Validate the password
-        password = validated_data.get('password')
-        user = UserRegister(**validated_data)  # Create an instance without saving to pass to the validator
-        try:
-            validate_password(password, user=user)
-        except ValidationError as e:
-            raise serializers.ValidationError({'password': list(e.messages)})
-
-        validated_data['password'] = make_password(password)
-        user.save()  # Now save the instance
-        
-        # Assign roles
-        user.roles.set(roles)
-
-        # Send welcome email
-        send_mail(
-            'Welcome to My Site',
-            f'Hello {user.username}, welcome to our site!',
-            'phakkapol@example.com',  # From email
-            [user.email],
-            fail_silently=False,  # Set to False to raise an error if email fails
-        )
-        
-        # Send notification
-        Notification.objects.create(
-            user=user,
-            message=f"Welcome {user.username}! Your registration is successful."
-        )
-        return user
     
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:

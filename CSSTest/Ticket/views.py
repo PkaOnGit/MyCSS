@@ -25,31 +25,39 @@ class TicketCreateAPIView(APIView):
         serializer = TicketSerializer(data=request.data)
         if serializer.is_valid():
             user_id = request.data.get('user_id')
-            print("User ID from request:", user_id)  # Debug statement
             try:
                 user = User.objects.get(id=user_id)
-                print("User found:", user)  # Debug statement
                 ticket = serializer.save(user=user)
                 Notification.objects.create(user=user, message="Your ticket has been created!")
+                # Send email notification
                 send_mail(
                     'Ticket Created',
-                    f'Thank you {user.username} for creating a ticket: {ticket.title}',
-                    'phakkapol@e-works.co.uk',
+                    f'Thank you for creating a ticket: {ticket.title}',
+                    'from@example.com',
                     [user.email],
                     fail_silently=False,
                 )
-                # Send email notification to the admin
-                send_mail(
-                    'New Ticket Created',
-                    f'A new ticket has been created by {user.username}: {ticket.title}',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [settings.ADMIN_EMAIL],
-                    fail_silently=False,
-                )
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                response_data = {
+                    "status": "success",
+                    "status_code": 201,
+                    "message": "Ticket created successfully",
+                    "ticket": serializer.data
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
             except User.DoesNotExist:
-                return Response({'error': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                response_data = {
+                    "status": "error",
+                    "status_code": 400,
+                    "message": "User does not exist"
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {
+            "status": "error",
+            "status_code": 400,
+            "message": "Ticket creation failed",
+            "errors": serializer.errors
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 class TicketEditAPIView(APIView):
     permission_classes = [RolePermissionFactory('Admin', 'Staff')]
@@ -68,24 +76,31 @@ class TicketEditAPIView(APIView):
             serializer = TicketSerializer(ticket, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                
-                # Send notification to the user
-                user = ticket.user
-                Notification.objects.create(user=user, message=f"Your ticket '{ticket.title}' has been updated.")
-                
-                # Send email notification to the user
-                send_mail(
-                    'Ticket Updated',
-                    f'Your ticket "{ticket.title}" has been updated. Check the details in your account.',
-                    'phakkapol@e-works.co.uk',
-                    [user.email],
-                    fail_silently=False,
+                Notification.objects.create(
+                    user=ticket.user,
+                    message="Your ticket has been updated by the admin."
                 )
-                
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                response_data = {
+                    "status": "success",
+                    "status_code": 200,
+                    "message": "Ticket updated successfully",
+                    "ticket": serializer.data
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            response_data = {
+                "status": "error",
+                "status_code": 400,
+                "message": "Ticket update failed",
+                "errors": serializer.errors
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         except Ticket.DoesNotExist:
-            return Response({'detail': 'Ticket not found'}, status=status.HTTP_404_NOT_FOUND)
+            response_data = {
+                "status": "error",
+                "status_code": 404,
+                "message": "Ticket not found"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
         
 class ListTicketsAPIView(APIView):
     permission_classes = [RolePermissionFactory('Admin', 'Staff')]

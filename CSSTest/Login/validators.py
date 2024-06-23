@@ -1,60 +1,37 @@
+import re
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
-import re
 
-class MaximumLengthValidator:
-    def __init__(self, max_length=12):
-        self.max_length = max_length
-
+class StrongPasswordValidator:
     def validate(self, password, user=None):
-        if len(password) > self.max_length:
+        if len(password) < 8:
             raise ValidationError(
-                _("This password is too long. It must contain no more than %(max_length)d characters."),
-                code='password_too_long',
-                params={'max_length': self.max_length},
+                _("This password is too short. It must contain at least 8 characters."),
+                code='password_too_short',
+            )
+        if not re.findall('[A-Z]', password):
+            raise ValidationError(
+                _("This password must contain at least one uppercase letter."),
+                code='password_no_upper',
+            )
+        if not re.findall('[a-z]', password):
+            raise ValidationError(
+                _("This password must contain at least one lowercase letter."),
+                code='password_no_lower',
+            )
+        if not re.findall('[0-9]', password):
+            raise ValidationError(
+                _("This password must contain at least one digit."),
+                code='password_no_digit',
+            )
+        if not re.findall('[^A-Za-z0-9]', password):
+            raise ValidationError(
+                _("This password must contain at least one special character."),
+                code='password_no_special',
             )
 
     def get_help_text(self):
-        return _("Your password must contain no more than %(max_length)d characters.") % {'max_length': self.max_length}
-
-class CustomAttributeSimilarityValidator:
-    """
-    Validate whether the password is sufficiently different from the user's attributes.
-    """
-
-    def __init__(self, user_attributes=None, max_similarity=0.7):
-        if user_attributes is None:
-            user_attributes = ['username', 'email']
-        self.user_attributes = user_attributes
-        self.max_similarity = max_similarity
-
-    def validate(self, password, user=None):
-        if not user:
-            return
-
-        for attribute in self.user_attributes:
-            value = getattr(user, attribute, None)
-            if value and self._is_too_similar(password, value):
-                raise ValidationError(
-                    _("The password is too similar to the %(attribute)s."),
-                    code='password_too_similar',
-                    params={'attribute': attribute},
-                )
-
-    def _is_too_similar(self, password, value):
-        value = value.lower()
-        password = password.lower()
-
-        # Check for substring
-        if value in password or password in value:
-            return True
-
-        # Check for common character proportion
-        common_chars = set(value) & set(password)
-        similarity_ratio = len(common_chars) / max(len(value), len(password))
-        return similarity_ratio >= self.max_similarity
-
-    def get_help_text(self):
         return _(
-            "Your password can't be too similar to your username or email address."
+            "Your password must contain at least 8 characters, and include at least one uppercase letter, "
+            "one lowercase letter, one digit, and one special character."
         )

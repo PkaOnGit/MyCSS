@@ -1,11 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer, UserProfileSerializer
+from .serializers import RegistrationSerializer
 from .models import UserRegister 
-from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,6 +13,14 @@ from Notification.models import Notification
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from .permissions import RolePermissionFactory
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.password_validation import validate_password
+from django.core.mail import send_mail
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import UserRegister, Role
 
 User = get_user_model()
 
@@ -22,18 +28,61 @@ class RegisterUserAPIView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            Notification.objects.create(user=user, message="Welcome to the system!")
+            validated_data = serializer.validated_data
+            roles = validated_data.pop('roles', [])
+
+            # Validate the password
+            password = validated_data.get('password')
+            user = UserRegister(**validated_data)  # Create an instance without saving to pass to the validator
+            try:
+                validate_password(password, user=user)
+            except DjangoValidationError as e:
+                return Response({
+                    "status": "error",
+                    "status_code": 400,
+                    "message": "User registration unsuccessful",
+                    "errors": {'password': list(e.messages)}
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            validated_data['password'] = make_password(password)
+            user.save()  # Now save the instance
+
+            # Assign roles
+            user.roles.set(roles)
+
+            # Send notification
+            Notification.objects.create(
+                user=user,
+                message=f"Welcome {user.username}! Your registration is successful."
+            )
+
             # Send email notification
             send_mail(
-                    'Welcome to the system',
-                    'Thank you for registering.',
-                    'phakkapol@gmail.com',
-                    [user.email],
-                    fail_silently=False,
-                )
-            return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                'Registration Successful',
+                f'Welcome {user.username}! Your registration is successful.',
+                'from@example.com',  # Replace with your sender email
+                [user.email],
+                fail_silently=False,
+            )
+
+            # Format and return the response
+            response_data = {
+                "status": "success",
+                "status_code": 201,
+                "message": "User registration successful",
+                "user": serializer.data
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        return Response(
+            {
+                "status": "error",
+                "status_code": 400,
+                "message": "User registration unsuccessful",
+                "errors": serializer.errors
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 class UserProfileAPIView(APIView):
     permission_classes = [RolePermissionFactory('Admin', 'Staff')]
@@ -56,18 +105,35 @@ class UserProfileAPIView(APIView):
                     user=user,
                     message="Your profile has been updated by the admin."
                 )
-                 # Send an email notification
+                # Send email notification
                 send_mail(
                     'Profile Updated',
-                    'Hello {}, your profile has been updated by the admin.'.format(user.username),
-                    'phakkapol@e-works.co.uk',  # Replace with your "from" email
+                    'Your profile has been updated by the admin.',
+                    'from@example.com',  # Replace with your sender email
                     [user.email],
                     fail_silently=False,
                 )
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                response_data = {
+                    "status": "success",
+                    "status_code": 200,
+                    "message": "Profile updated successfully",
+                    "user": serializer.data
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            response_data = {
+                "status": "error",
+                "status_code": 400,
+                "message": "Profile update failed",
+                "errors": serializer.errors
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
-            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            response_data = {
+                "status": "error",
+                "status_code": 404,
+                "message": "User not found"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
         
 class LoginAPIView(APIView):
     def post(self, request):
