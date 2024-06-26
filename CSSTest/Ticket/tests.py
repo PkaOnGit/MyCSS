@@ -50,4 +50,4 @@ class TicketCreationAPITestCase(APITestCase):
         self.assertIn('title', response.data['errors'])
 
         # Check if the ticket was not created
-        self.assertFalse(Ticket.objects.filter(description='This is a test ticket without a title.').exists())
+        self.assertFalse(Ticket.objects.filter(title='This is a test ticket without a title.').exists())
