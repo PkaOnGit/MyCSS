@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import UserRegister
-from .serializers import UserRegisterSerializer, RegistrationSerializer
+from .serializers import UserRegisterSerializer, RegistrationSerializer, LoginSerializer
 from Notification.models import Notification
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -137,39 +137,27 @@ class UserProfileAPIView(APIView):
         
 class LoginAPIView(APIView):
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            return Response({
+                "status": "success",
+                "status_code": 200,
+                "message": "Login successful",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email
+                }
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "status": "error",
+                "status_code": 400,
+                "message": "Login unsuccessful",
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            user = UserRegister.objects.get(username=username)
-            if check_password(password, user.password):
-                return Response({'detail': 'Login successful', 'id': user.id}, status=status.HTTP_200_OK)
-            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
-        except UserRegister.DoesNotExist:
-            return Response({'detail': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-
-# class DeleteUserAPIView(APIView):
-    
-#     def delete(self, request, user_id):
-#         try:
-#             user = UserRegister.objects.get(id=user_id)
-#             user.delete()
-#             return Response({'detail': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-#         except UserRegister.DoesNotExist:
-#             return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-# class CustomAuthToken(ObtainAuthToken):
-#     def post(self, request, *args, **kwargs):
-#         serializer = self.serializer_class(data=request.data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.validated_data['user']
-#         token, created = Token.objects.get_or_create(user=user)
-#         return Response({
-#             'token': token.key,
-#             'id': user.id,
-#             'username': user.username
-#         })
-    
 class ListUsersAPIView(APIView):
     permission_classes = [RolePermissionFactory('Admin', 'Staff')]
     

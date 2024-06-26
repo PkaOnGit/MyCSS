@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class TicketCreateAPIView(APIView):
-    permission_classes = [RolePermissionFactory('Admin', 'Staff', 'User')]
+    # permission_classes = [RolePermissionFactory('Admin', 'Staff', 'User')]
 
     def post(self, request):
         serializer = TicketSerializer(data=request.data)
