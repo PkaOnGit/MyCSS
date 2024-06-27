@@ -71,14 +71,23 @@ class TicketEditAPIView(APIView):
             return Response({'detail': 'Ticket not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, ticket_id):
+        user_id = request.data.get('user_id')
         try:
             ticket = Ticket.objects.get(id=ticket_id)
+            user = User.objects.get(id=user_id)
             serializer = TicketSerializer(ticket, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 Notification.objects.create(
                     user=ticket.user,
                     message="Your ticket has been updated by the admin."
+                )
+                send_mail(
+                    'Ticket Created',
+                    f'Thank you for creating a ticket: {ticket.title}',
+                    'from@example.com',
+                    [user.email],
+                    fail_silently=False,
                 )
                 response_data = {
                     "status": "success",
