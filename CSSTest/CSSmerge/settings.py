@@ -136,7 +136,7 @@ EMAIL_HOST = 'smtp.gmail.com'  # Replace with your SMTP server
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'phakkapol@e-works.co.uk'  # Replace with your email
-EMAIL_HOST_PASSWORD = 'uesd egnw zttr phvo'  # Replace with your email password
+EMAIL_HOST_PASSWORD = ''  # Replace with your email password
 DEFAULT_FROM_EMAIL = 'phakkpol@e-works.co.uk'  # Replace with your "from" email
 ADMIN_EMAIL = 'phakkapol@e-works.co.uk'  # Replace with your admin email
 
