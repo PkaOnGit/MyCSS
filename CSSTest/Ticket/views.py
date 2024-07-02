@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class TicketCreateAPIView(APIView):
-    permission_classes = [RolePermissionFactory('Admin', 'Staff', 'User')]
+    # permission_classes = [RolePermissionFactory('Admin', 'Staff', 'User')]
 
     def post(self, request):
         serializer = TicketSerializer(data=request.data)
@@ -75,6 +75,7 @@ class TicketEditAPIView(APIView):
         try:
             user = User.objects.get(id=user_id)
             ticket = Ticket.objects.get(id=ticket_id)
+            user = User.objects.get(id=user_id)
             serializer = TicketSerializer(ticket, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()

@@ -1,14 +1,15 @@
 from django.db import models
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
-status = (("Pending","pending"),("Closed","closed"))
+status = (("Pending","pending"),("In-progressed","in-progressed"),("Closed","closed"))
 
 class Ticket(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255, null = True)
-    content = models.CharField(max_length= 1024, null = True)
-    status = models.CharField(choices=status,max_length=155, default="Pending")
-    noted = models.CharField(max_length= 1024, null = True)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    status = models.CharField(max_length=50, choices=status, default='Pending')
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -24,6 +25,18 @@ class Ticket(models.Model):
                 self.id = 1
 
         super().save(*args, **kwargs)  # Call the real save() method
+
+    def clean(self):
+        if not self.title:
+            raise ValidationError(_('Title cannot be null.'))
+        if not self.content:
+            raise ValidationError(_('Content cannot be null.'))
+        if not self.user:
+            raise ValidationError(_('User cannot be null.'))
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["-created"]

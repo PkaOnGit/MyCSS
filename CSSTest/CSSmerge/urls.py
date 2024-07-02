@@ -43,7 +43,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # ----------------User module--------------------
     path('registeration/login/', LoginAPIView.as_view(), name='login'),  # Use as_view() for class-based views
-    path('registeration/register/', RegisterUserAPIView.as_view(), name='register'),
+    path('registeration/register/', RegisterUserAPIView.as_view(), name='register_user'),
     # path('registeration/delete-user/<int:user_id>/', DeleteUserAPIView.as_view(), name='delete-user'),
     path('registeration/users/', ListUsersAPIView.as_view(), name='list-users'),
     path('registeration/profile/<int:user_id>/', UserProfileAPIView.as_view(), name='update-users'),
@@ -52,7 +52,7 @@ urlpatterns = [
     path('roles/<int:pk>/', RoleDetailAPIView.as_view(), name='role-detail'),
     path('users/<int:user_id>/roles/', UserRoleAPIView.as_view(), name='user-role'),
     # ----------------Ticket module----------------
-    path('tickets/', ListTicketsAPIView.as_view(), name='ticket-create'),
+    path('tickets/', ListTicketsAPIView.as_view(), name='ticket-list'),
     path('tickets/create/', TicketCreateAPIView.as_view(), name='ticket-create'),
     path('tickets/<int:ticket_id>/', TicketEditAPIView.as_view(), name='ticket-edit'),
     # ------------------Notification Module--------
