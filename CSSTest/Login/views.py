@@ -202,7 +202,7 @@ class UserRoleAPIView(APIView):
                 serializer.save()
                 Notification.objects.create(
                     user=user,
-                    message="Your profile has been updated by the admin."
+                    message="Your Role has been updated by the admin."
                 )
                 # Send email notification
                 send_mail(
