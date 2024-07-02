@@ -71,7 +71,9 @@ class TicketEditAPIView(APIView):
             return Response({'detail': 'Ticket not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, ticket_id):
+        user_id = request.data.get('user_id')
         try:
+            user = User.objects.get(id=user_id)
             ticket = Ticket.objects.get(id=ticket_id)
             serializer = TicketSerializer(ticket, data=request.data, partial=True)
             if serializer.is_valid():
@@ -79,6 +81,13 @@ class TicketEditAPIView(APIView):
                 Notification.objects.create(
                     user=ticket.user,
                     message="Your ticket has been updated by the admin."
+                )
+                send_mail(
+                    'Ticket Updated',
+                    f'Thank you for updating the ticket: {ticket.title}',
+                    'your-email@example.com',  # Ensure this matches EMAIL_HOST_USER
+                    [user.email],
+                    fail_silently=False,
                 )
                 response_data = {
                     "status": "success",
@@ -94,11 +103,11 @@ class TicketEditAPIView(APIView):
                 "errors": serializer.errors
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        except Ticket.DoesNotExist:
+        except (Ticket.DoesNotExist, User.DoesNotExist):
             response_data = {
                 "status": "error",
                 "status_code": 404,
-                "message": "Ticket not found"
+                "message": "Ticket or user not found"
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
         

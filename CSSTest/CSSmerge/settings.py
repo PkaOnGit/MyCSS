@@ -131,14 +131,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Replace with your SMTP server
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'phakkapol@e-works.co.uk'  # Replace with your email
-EMAIL_HOST_PASSWORD = 'fxru kump imej mgda'  # Replace with your email password
-DEFAULT_FROM_EMAIL = 'phakkpol@e-works.co.uk'  # Replace with your "from" email
-ADMIN_EMAIL = 'phakkapol@e-works.co.uk'  # Replace with your admin email
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'  # Replace with your SMTP server
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'phakkapol@e-works.co.uk'  # Replace with your email
+# EMAIL_HOST_PASSWORD = ''  # Replace with your email password
+# DEFAULT_FROM_EMAIL = 'phakkpol@e-works.co.uk'  # Replace with your "from" email
+# ADMIN_EMAIL = 'phakkapol@e-works.co.uk'  # Replace with your admin email
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
